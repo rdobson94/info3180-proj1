@@ -8,7 +8,19 @@ This file creates your application.
 
 from app import app
 from flask import render_template, request, redirect, url_for
+from flask.ext.wtf import Form
+from wtforms.fields import TextField
+from wtforms.validators import Required, Email
 
+from app import db
+from app.models import Profile
+
+app.config['SECRET_KEY']="afasddasfadf u97979 jljljafs"
+
+class ProfileForm(Form):
+   first_name = TextField('First Name', validators=[Required()]) 
+   last_name = TextField('Last Name', validators=[Required()])	
+   image = TextField('Image', validators=[Required(), Email()])
 
 ###
 # Routing for your application.
@@ -19,18 +31,39 @@ def home():
     """Render website's home page."""
     return render_template('home.html')
 
+@app.route('/profile/')
+def profile_add():
+    form = ProfileForm()
+      # if it is a post
+    import pdb;pdb.set_trace()
+    if request.method=="POST":
+      #check if form was submiited properly
+      #use wtforms to do that
+      # write to the database
+      first_name = request.form['first_name']
+      last_name = request.form['last_name']
+      newprofile=Profile(first_name,last_name)
+      db.session.add(newprofile)
+      db.session.commit()
+      return "{} {} this was a post".format(first_name,last_name)
+      
+    return render_template('profile_add.html', form=form)
 
-@app.route('/about/')
-def about():
-    """Render the website's about page."""
-    return render_template('about.html')
+@app.route('/profiles/')
+def profile_list():
+    return "list all profiles"
+
+@app.route('/profile/<int:id>')
+def profile_view(id):
+    return "profile {}".format(id)
+
 
 
 ###
 # The functions below should be applicable to all Flask apps.
 ###
 
-@app.route('/<file_name>.txt')
+@app.route('/<file_name>.txt/')
 def send_text_file(file_name):
     """Send your static text file."""
     file_dot_text = file_name + '.txt'
@@ -56,3 +89,4 @@ def page_not_found(error):
 
 if __name__ == '__main__':
     app.run(debug=True,host="0.0.0.0",port="8888")
+
